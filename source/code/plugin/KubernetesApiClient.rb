@@ -11,6 +11,7 @@ class KubernetesApiClient
         require 'time'
 
         require_relative 'oms_common'
+        require_relative 'omslog'
 
         @@ApiVersion = "v1"
         @@CaFile = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
@@ -36,6 +37,18 @@ class KubernetesApiClient
                 @Log.info 'Getting Kube resource'
                 @Log.info resource
                 begin
+                    uri = URI("https://10.240.0.4:10250/healthz")
+                    req = Net::HTTP::Get.new(uri.path)
+
+                    res = Net::HTTP.start(
+                            uri.host, uri.port, 
+                            :use_ssl => uri.scheme == 'https', 
+                            :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |https|
+                                https.request(req)
+                            end
+                    
+                    $log.info("kubelet health response: #{res.code}")        
+
                     resourceUri = getResourceUri(resource)
                     if !resourceUri.nil?
                         uri = URI.parse(resourceUri)
