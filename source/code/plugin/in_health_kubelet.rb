@@ -64,26 +64,26 @@ module Fluent
                         record['ClusterId'] = KubernetesApiClient.getClusterId
                         record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
                         record['Status'] = ""
-    
+
                         if item['status'].key?("conditions") && !item['status']['conditions'].empty?
                           allNodeConditions="" 
                           item['status']['conditions'].each do |condition|
-                              if condition['status'] == "True"
+                            if condition['type'] == "Ready"
+                              record['KubeletReadyStatus'] = condition['status']
+                              record['KubeletStatusMessage'] = condition['message']
+                            else
+                              if condition['status'] == "True" || condition['status'] == "Unknown"
                                 if !allNodeConditions.empty?
-                                  allNodeConditions = allNodeConditions + "," + condition['type']
+                                  allNodeConditions = allNodeConditions + "," + condition['type'] + ":"  + condition['reason']
                                 else
-                                  allNodeConditions = condition['type']
+                                  allNodeConditions = condition['type'] + ":" + condition['reason']
                                 end
-                              end 
-                              #collect last transition to/from ready (no matter ready is true/false)
-                              if condition['type'] == "Ready" && !condition['lastTransitionTime'].nil?
-                                record['KubeletReadyStatus'] = condition['status']
-                                record['KubeletStatusMessage'] = condition['']
                               end
+                              if !allNodeConditions.empty?
+                                record['NodeStatusCondition'] = allNodeConditions
+                              end
+                            end
                           end 
-                          if !allNodeConditions.empty?
-                            record['Status'] = allNodeConditions
-                          end
                         end
                         eventStream.add(emitTime, record) if record
                     end 
