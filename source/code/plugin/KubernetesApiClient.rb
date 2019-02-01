@@ -137,6 +137,15 @@ class KubernetesApiClient
             return @@ClusterId
         end
 
+        def getClusterRegion
+            if ENV['AKS_REGION']
+                return ENV['AKS_REGION']
+            else
+                @Log.warn ("Kubernetes environment variable not set AKS_REGION. Unable to get cluster region.")
+                return nil
+            end
+        end
+
         def isNodeMaster
             return @@IsNodeMaster if !@@IsNodeMaster.nil?
             @@IsNodeMaster = false
