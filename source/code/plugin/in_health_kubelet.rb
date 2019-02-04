@@ -47,6 +47,12 @@ module Fluent
           end
         end
     
+        def populateCommonfields(record)
+          record['ClusterName'] = KubernetesApiClient.getClusterName
+          record['ClusterId'] = KubernetesApiClient.getClusterId
+          record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
+        end
+
         def enumerate
             currentTime = Time.now
             emitTime = currentTime.to_f
@@ -64,10 +70,10 @@ module Fluent
                         record['CollectionTime'] = batchTime #This is the time that is mapped to become TimeGenerated
                         computerName = item['metadata']['name'] 
                         record['Computer'] = computerName
-                        record['ClusterName'] = KubernetesApiClient.getClusterName
-                        record['ClusterId'] = KubernetesApiClient.getClusterId
-                        record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
-                        record['Status'] = ""
+                        #record['ClusterName'] = KubernetesApiClient.getClusterName
+                        #record['ClusterId'] = KubernetesApiClient.getClusterId
+                        #record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
+                        #record['Status'] = ""
                         # Tracking state change in order to send node health data only in case of state change or timeout
                         isStateChange = false
 
@@ -77,10 +83,10 @@ module Fluent
                             conditionType = condition['type']
                             conditionStatus = condition['status']
                             conditionReason = condition['reason']
-                            if !(conditionStatus.casecmp(@@previousNodeStatus[conditionType])) 
+                            if !(conditionStatus.casecmp(@@previousNodeStatus[computerName+conditionType]) == 0) 
                               isStateChange = true
                             end
-                            @@previousNodeStatus[conditionType] = conditionStatus
+                            @@previousNodeStatus[computerName+conditionType] = conditionStatus
                             if conditionType == "Ready"
                               record['KubeletReadyStatus'] = conditionStatus
                               record['KubeletStatusMessage'] = condition['message']
@@ -101,6 +107,8 @@ module Fluent
                       currentTime = DateTime.now.to_time.to_i
                       if @@nodeHealthDataTimeTracker[computerName].nil?
                         #Sending node health data the very first time without checking for state change and timeout
+                        record['Computer'] = computerName
+                        populateCommonfields(record)
                         eventStream.add(emitTime, record) if record
                         @@nodeHealthDataTimeTracker[computerName] = currentTime
                       else                  
@@ -108,6 +116,8 @@ module Fluent
                         timeDifference =  (currentTime - @@nodeHealthDataTimeTracker[computerName]).abs
                         timeDifferenceInMinutes = timeDifference/60
                         if (timeDifferenceInMinutes >= 3 || isStateChange)
+                          record['Computer'] = computerName
+                          populateCommonfields(record)
                           eventStream.add(emitTime, record) if record
                           @@nodeHealthDataTimeTracker[computerName] = currentTime
                         end
