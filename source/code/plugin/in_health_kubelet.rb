@@ -31,11 +31,9 @@ module Fluent
             @condition = ConditionVariable.new
             @mutex = Mutex.new
             @thread = Thread.new(&method(:run_periodic))
-            @@healthTimeTracker = DateTime.now.to_time.to_i
-            @@previousnetworkUnavailableStatus = ''
-            @@previousOutOfDiskStatus = ''
-            @@previousMemoryPressureStatus = ''
-            @@previoudDiskPressureStatus = ''
+            @@previousNodeStatus = {}
+            # Tracks the last time node health data sent for each node
+            @@nodeHealthDataTimeTracker = {}
           end
         end
     
@@ -64,40 +62,58 @@ module Fluent
                     nodeInventory['items'].each do |item|
                         record = {}
                         record['CollectionTime'] = batchTime #This is the time that is mapped to become TimeGenerated
-                        record['Computer'] = item['metadata']['name'] 
+                        computerName = item['metadata']['name'] 
+                        record['Computer'] = computerName
                         record['ClusterName'] = KubernetesApiClient.getClusterName
                         record['ClusterId'] = KubernetesApiClient.getClusterId
                         record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
                         record['Status'] = ""
+                        # Tracking state change in order to send node health data only in case of state change or timeout
+                        isStateChange = false
 
                         if item['status'].key?("conditions") && !item['status']['conditions'].empty?
                           allNodeConditions="" 
                           item['status']['conditions'].each do |condition|
-                            if condition['type'] == "Ready"
-                              record['KubeletReadyStatus'] = condition['status']
+                            conditionType = condition['type']
+                            conditionStatus = condition['status']
+                            conditionReason = condition['reason']
+                            if !(conditionStatus.casecmp(@@previousNodeStatus[conditionType])) 
+                              isStateChange = true
+                            end
+                            @@previousNodeStatus[conditionType] = conditionStatus
+                            if conditionType == "Ready"
+                              record['KubeletReadyStatus'] = conditionStatus
                               record['KubeletStatusMessage'] = condition['message']
-                            elsif condition['status'] == "True" || condition['status'] == "Unknown"
+                              record['KubeletStatusReason'] = conditionReason
+                            elsif conditionStatus == "True" || conditionStatus == "Unknown"
                               if !allNodeConditions.empty?
-                                allNodeConditions = allNodeConditions + "," + condition['type'] + ":"  + condition['reason']
+                                allNodeConditions = allNodeConditions + "," + conditionType + ":"  + conditionReason
                               else
-                                allNodeConditions = condition['type'] + ":" + condition['reason']
+                                allNodeConditions = conditionType + ":" + conditionReason
                               end
                             end
                             if !allNodeConditions.empty?
                               record['NodeStatusCondition'] = allNodeConditions
                             end
                           end
-                        end 
+                      end
+                      
+                      currentTime = DateTime.now.to_time.to_i
+                      if @@nodeHealthDataTimeTracker[computerName].nil?
+                        #Sending node health data the very first time without checking for state change and timeout
+                        eventStream.add(emitTime, record) if record
+                        @@nodeHealthDataTimeTracker[computerName] = currentTime
+                      else                  
+                        # Tracking time to send node health data only on timeout or change in state
+                        timeDifference =  (currentTime - @@nodeHealthDataTimeTracker[computerName]).abs
+                        timeDifferenceInMinutes = timeDifference/60
+                        if (timeDifferenceInMinutes >= 3 || isStateChange)
+                          eventStream.add(emitTime, record) if record
+                          @@nodeHealthDataTimeTracker[computerName] = currentTime
+                        end
+                      end
                     end
-                    # Tracking time to send node health data only on timeout or change in state
-                    timeDifference =  (DateTime.now.to_time.to_i - @@healthTimeTracker).abs
-                    timeDifferenceInMinutes = timeDifference/60
-                    if (timeDifferenceInMinutes >= 3)
-                      eventStream.add(emitTime, record) if record
-                      router.emit_stream(@tag, eventStream) if eventStream
-                      # Resetting timer once the node health data is sent
-                      @@healthTimeTracker = DateTime.now.to_time.to_i
-                    end 
+                    router.emit_stream(@tag, eventStream) if eventStream
                 end  
               rescue  => errorStr
                 #$log.warn line.dump, error: errorStr.to_s
