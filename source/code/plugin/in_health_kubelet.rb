@@ -31,6 +31,11 @@ module Fluent
             @condition = ConditionVariable.new
             @mutex = Mutex.new
             @thread = Thread.new(&method(:run_periodic))
+            @@healthTimeTracker = DateTime.now.to_time.to_i
+            @@previousnetworkUnavailableStatus = ''
+            @@previousOutOfDiskStatus = ''
+            @@previousMemoryPressureStatus = ''
+            @@previoudDiskPressureStatus = ''
           end
         end
     
@@ -71,23 +76,28 @@ module Fluent
                             if condition['type'] == "Ready"
                               record['KubeletReadyStatus'] = condition['status']
                               record['KubeletStatusMessage'] = condition['message']
-                            else
-                              if condition['status'] == "True" || condition['status'] == "Unknown"
-                                if !allNodeConditions.empty?
-                                  allNodeConditions = allNodeConditions + "," + condition['type'] + ":"  + condition['reason']
-                                else
-                                  allNodeConditions = condition['type'] + ":" + condition['reason']
-                                end
-                              end
+                            elsif condition['status'] == "True" || condition['status'] == "Unknown"
                               if !allNodeConditions.empty?
-                                record['NodeStatusCondition'] = allNodeConditions
+                                allNodeConditions = allNodeConditions + "," + condition['type'] + ":"  + condition['reason']
+                              else
+                                allNodeConditions = condition['type'] + ":" + condition['reason']
                               end
                             end
-                          end 
-                        end
-                        eventStream.add(emitTime, record) if record
+                            if !allNodeConditions.empty?
+                              record['NodeStatusCondition'] = allNodeConditions
+                            end
+                          end
+                        end 
+                    end
+                    # Tracking time to send node health data only on timeout or change in state
+                    timeDifference =  (DateTime.now.to_time.to_i - @@healthTimeTracker).abs
+                    timeDifferenceInMinutes = timeDifference/60
+                    if (timeDifferenceInMinutes >= 3)
+                      eventStream.add(emitTime, record) if record
+                      router.emit_stream(@tag, eventStream) if eventStream
+                      # Resetting timer once the node health data is sent
+                      @@healthTimeTracker = DateTime.now.to_time.to_i
                     end 
-                    router.emit_stream(@tag, eventStream) if eventStream
                 end  
               rescue  => errorStr
                 #$log.warn line.dump, error: errorStr.to_s
