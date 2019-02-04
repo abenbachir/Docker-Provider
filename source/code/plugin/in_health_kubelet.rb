@@ -83,44 +83,41 @@ module Fluent
                             conditionType = condition['type']
                             conditionStatus = condition['status']
                             conditionReason = condition['reason']
-                            if !(conditionStatus.casecmp(@@previousNodeStatus[computerName+conditionType]) == 0) 
+                            if @@previousNodeStatus[computerName+conditionType].nil? 
+                              || !(conditionStatus.casecmp(@@previousNodeStatus[computerName+conditionType]) == 0)
+                              # Comparing current status with previous status and setting state change as true
                               isStateChange = true
-                            end
-                            @@previousNodeStatus[computerName+conditionType] = conditionStatus
-                            if conditionType == "Ready"
-                              record['KubeletReadyStatus'] = conditionStatus
-                              record['KubeletStatusMessage'] = condition['message']
-                              record['KubeletStatusReason'] = conditionReason
-                            elsif conditionStatus == "True" || conditionStatus == "Unknown"
-                              if !allNodeConditions.empty?
-                                allNodeConditions = allNodeConditions + "," + conditionType + ":"  + conditionReason
-                              else
-                                allNodeConditions = conditionType + ":" + conditionReason
+                              @@previousNodeStatus[computerName+conditionType] = conditionStatus
+                              if conditionType == "Ready"
+                                record['KubeletReadyStatus'] = conditionStatus
+                                record['KubeletStatusMessage'] = condition['message']
+                                record['KubeletStatusReason'] = conditionReason
+                              elsif conditionStatus == "True" || conditionStatus == "Unknown"
+                                if !allNodeConditions.empty?
+                                  allNodeConditions = allNodeConditions + "," + conditionType + ":"  + conditionReason
+                                else
+                                  allNodeConditions = conditionType + ":" + conditionReason
+                                end
                               end
-                            end
-                            if !allNodeConditions.empty?
-                              record['NodeStatusCondition'] = allNodeConditions
+                              if !allNodeConditions.empty?
+                                record['NodeStatusCondition'] = allNodeConditions
+                              end
                             end
                           end
                       end
                       
-                      currentTime = DateTime.now.to_time.to_i
-                      if @@nodeHealthDataTimeTracker[computerName].nil?
+                      currentTime = DateTime.now.to_time.
+                      timeDifferenceInMinutes = 0
+                      if !@@nodeHealthDataTimeTracker[computerName].nil?
+                        timeDifference =  (currentTime - @@nodeHealthDataTimeTracker[computerName]).abs
+                        timeDifferenceInMinutes = timeDifference/60
+                      end
+                      if (isStateChange) || (timeDifferenceInMinutes >= 3)
                         #Sending node health data the very first time without checking for state change and timeout
                         record['Computer'] = computerName
                         populateCommonfields(record)
                         eventStream.add(emitTime, record) if record
                         @@nodeHealthDataTimeTracker[computerName] = currentTime
-                      else                  
-                        # Tracking time to send node health data only on timeout or change in state
-                        timeDifference =  (currentTime - @@nodeHealthDataTimeTracker[computerName]).abs
-                        timeDifferenceInMinutes = timeDifference/60
-                        if (timeDifferenceInMinutes >= 3 || isStateChange)
-                          record['Computer'] = computerName
-                          populateCommonfields(record)
-                          eventStream.add(emitTime, record) if record
-                          @@nodeHealthDataTimeTracker[computerName] = currentTime
-                        end
                       end
                     end
                     router.emit_stream(@tag, eventStream) if eventStream
