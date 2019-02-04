@@ -75,30 +75,39 @@ module Fluent
                         #record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
                         #record['Status'] = ""
                         # Tracking state change in order to send node health data only in case of state change or timeout
-                        isStateChange = false
+                        #isStateChange = false
+                        flushRecord = false
 
+                        currentTime = DateTime.now.to_time.to_i
+                        timeDifferenceInMinutes = 0
+                        if !@@nodeHealthDataTimeTracker[computerName].nil?
+                          timeDifference =  (currentTime - @@nodeHealthDataTimeTracker[computerName]).abs
+                          timeDifferenceInMinutes = timeDifference/60
+                        end
                         if item['status'].key?("conditions") && !item['status']['conditions'].empty?
                           allNodeConditions="" 
                           item['status']['conditions'].each do |condition|
                             conditionType = condition['type']
                             conditionStatus = condition['status']
                             conditionReason = condition['reason']
-                            if @@previousNodeStatus[computerName+conditionType].nil? 
-                              || !(conditionStatus.casecmp(@@previousNodeStatus[computerName+conditionType]) == 0)
+                            if @@previousNodeStatus[computerName+conditionType].nil? || 
+                              !(conditionStatus.casecmp(@@previousNodeStatus[computerName+conditionType]) == 0) ||
+                              timeDifferenceInMinutes >= 3
                               # Comparing current status with previous status and setting state change as true
-                              isStateChange = true
+                              #isStateChange = true
+                              flushRecord = true
                               @@previousNodeStatus[computerName+conditionType] = conditionStatus
-                              if conditionType == "Ready"
-                                record['KubeletReadyStatus'] = conditionStatus
-                                record['KubeletStatusMessage'] = condition['message']
-                                record['KubeletStatusReason'] = conditionReason
-                              elsif conditionStatus == "True" || conditionStatus == "Unknown"
+                              #if conditionType == "Ready"
+                                #record['KubeletReadyStatus'] = conditionStatus
+                                #record['KubeletStatusMessage'] = condition['message']
+                                #record['KubeletStatusReason'] = conditionReason
+                              #elsif conditionStatus == "True" || conditionStatus == "Unknown"
                                 if !allNodeConditions.empty?
                                   allNodeConditions = allNodeConditions + "," + conditionType + ":"  + conditionReason
                                 else
                                   allNodeConditions = conditionType + ":" + conditionReason
                                 end
-                              end
+                              #end
                               if !allNodeConditions.empty?
                                 record['NodeStatusCondition'] = allNodeConditions
                               end
@@ -106,16 +115,18 @@ module Fluent
                           end
                       end
                       
-                      currentTime = DateTime.now.to_time.
-                      timeDifferenceInMinutes = 0
-                      if !@@nodeHealthDataTimeTracker[computerName].nil?
-                        timeDifference =  (currentTime - @@nodeHealthDataTimeTracker[computerName]).abs
-                        timeDifferenceInMinutes = timeDifference/60
-                      end
-                      if (isStateChange) || (timeDifferenceInMinutes >= 3)
+                      #currentTime = DateTime.now.to_time.to_i
+                      #timeDifferenceInMinutes = 0
+                      #if !@@nodeHealthDataTimeTracker[computerName].nil?
+                        #timeDifference =  (currentTime - @@nodeHealthDataTimeTracker[computerName]).abs
+                        #timeDifferenceInMinutes = timeDifference/60
+                      #end
+                      #if (isStateChange) || (timeDifferenceInMinutes >= 3)
+                      if flushRecord
                         #Sending node health data the very first time without checking for state change and timeout
                         record['Computer'] = computerName
                         populateCommonfields(record)
+                        $log.warn("recordData: #{record}")
                         eventStream.add(emitTime, record) if record
                         @@nodeHealthDataTimeTracker[computerName] = currentTime
                       end
