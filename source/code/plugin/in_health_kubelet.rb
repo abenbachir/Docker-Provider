@@ -153,7 +153,7 @@ module Fluent
                 $log.info("in_health_kubelet::run_periodic @ #{Time.now.utc.iso8601}")
                 enumerate
               rescue => errorStr
-                $log.warn "in_health_kubelet::run_periodic: enumerate Failed to kubelet health: #{errorStr}"
+                $log.warn "in_health_kubelet::run_periodic: enumerate Failed for kubelet health: #{errorStr}"
                 ApplicationInsightsUtility.sendExceptionTelemetry(errorStr)
               end
             end
