@@ -4,7 +4,7 @@
 module Fluent
     
       class Kubelet_Health_Input < Input
-        Plugin.register_input('dockerhealth', self)
+        Plugin.register_input('nodehealthcpuutilization', self)
     
         def initialize
           super
@@ -19,7 +19,7 @@ module Fluent
         end
     
         config_param :run_interval, :time, :default => '1m'
-        config_param :tag, :string, :default => "oms.containerinsights.DockerHealth"
+        config_param :tag, :string, :default => "oms.containerinsights.NodeCpuUtilizationHealth"
     
         def configure (conf)
           super
@@ -31,9 +31,11 @@ module Fluent
             @condition = ConditionVariable.new
             @mutex = Mutex.new
             @thread = Thread.new(&method(:run_periodic))
-            @@previousDockerState = ""
-            # Tracks the last time docker health data sent for each node
-            @@dockerHealthDataTimeTracker = DateTime.now.to_time.to_i
+            @@previousNodeCpuUtilizationState = ""
+            @@previouspreviousNodeCpuUtilizationState = ""
+            @@currentNodeCpuUtilizationState = ""
+            # Tracks the last time node cpu health data sent for each node
+            @@nodeCpuHealthDataTimeTracker = DateTime.now.to_time.to_i
             @@clusterName = KubernetesApiClient.getClusterName
             @@clusterId = KubernetesApiClient.getClusterId
             @@clusterRegion = KubernetesApiClient.getClusterRegion
@@ -51,9 +53,9 @@ module Fluent
         end
     
         #def populateCommonfields(record)
-          #record['ClusterName'] = KubernetesApiClient.getClusterName
-          #record['ClusterId'] = KubernetesApiClient.getClusterId
-          #record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
+         # record['ClusterName'] = KubernetesApiClient.getClusterName
+         # record['ClusterId'] = KubernetesApiClient.getClusterId
+         # record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
         #end
 
         def enumerate
@@ -63,9 +65,26 @@ module Fluent
             batchTime = currentTime.utc.iso8601
             record = {}
             eventStream = MultiEventStream.new
-            $log.info("in_docker_health::Making a call to get docker info @ #{Time.now.utc.iso8601}")
+            #$log.info("in_docker_health::Making a call to get docker info @ #{Time.now.utc.iso8601}")
             isDockerStateFlush = false
-            dockerInfo = DockerApiClient.dockerInfo
+            hostName = (OMS::Common.get_hostname)
+            # Get node cpu utilization from cAdvisor
+            metricInfo = JSON.parse(getSummaryStatsFromCAdvisor().body)
+            cpuUsageNanoSecondsRate = CAdvisorMetricsAPIClient.getNodeMetricItemRate(metricInfo, hostName, "cpu", "usageCoreNanoSeconds", "cpuUsageNanoCores")
+            if cpuUsageNanoSecondsRate && !cpuUsageNanoSecondsRate.empty? && !cpuUsageNanoSecondsRate.nil?
+              #metricDataItems.push(cpuUsageNanoSecondsRate)
+              
+
+
+            end
+
+
+
+
+
+
+
+
             if (!dockerInfo.nil? && !dockerInfo.empty?)
               dockerState = 'Healthy'
             else
@@ -84,9 +103,6 @@ module Fluent
               record['DockerState'] = dockerState
               hostName = (OMS::Common.get_hostname)
               record['Computer'] = hostName
-              record['ClusterName'] = @@clusterName
-              record['ClusterId'] = @@clusterId
-              record['ClusterRegion'] = @@clusterRegion
               eventStream.add(emitTime, record) if record
               $log.info("record: #{record}")
             end
