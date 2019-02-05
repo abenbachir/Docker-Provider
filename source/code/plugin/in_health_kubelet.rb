@@ -47,11 +47,11 @@ module Fluent
           end
         end
     
-        def populateCommonfields(record)
-          record['ClusterName'] = KubernetesApiClient.getClusterName
-          record['ClusterId'] = KubernetesApiClient.getClusterId
-          record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
-        end
+        #def populateCommonfields(record)
+         # record['ClusterName'] = KubernetesApiClient.getClusterName
+         # record['ClusterId'] = KubernetesApiClient.getClusterId
+         # record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
+        #end
 
         def enumerate
             currentTime = Time.now
@@ -125,7 +125,9 @@ module Fluent
                       if flushRecord
                         #Sending node health data the very first time without checking for state change and timeout
                         record['Computer'] = computerName
-                        populateCommonfields(record)
+                        record['ClusterName'] = KubernetesApiClient.getClusterName
+                        record['ClusterId'] = KubernetesApiClient.getClusterId
+                        record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
                         $log.warn("recordData: #{record}")
                         eventStream.add(emitTime, record) if record
                         @@nodeHealthDataTimeTracker[computerName] = currentTime

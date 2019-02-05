@@ -58,6 +58,7 @@ module Fluent
             currentTime = Time.now
             emitTime = currentTime.to_f
             batchTime = currentTime.utc.iso8601
+            record = {}
             eventStream = MultiEventStream.new
             $log.info("in_docker_health::Making a call to get docker info @ #{Time.now.utc.iso8601}")
             isDockerStateFlush = false
@@ -75,10 +76,10 @@ module Fluent
               previousDockerState = dockerState
               isDockerStateFlush = true
               @@dockerHealthDataTimeTracker = currentTime
+              record['CollectionTime'] = batchTime #This is the time that is mapped to become TimeGenerated
               record['DockerState'] = dockerState
               hostName = (OMS::Common.get_hostname)
               record['Computer'] = hostName
-
               eventStream.add(emitTime, record) if record
             end
 
