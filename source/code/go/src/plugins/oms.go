@@ -137,7 +137,10 @@ func updateContainerImageNameMaps() {
 		_imageIDMap := make(map[string]string)
 		_nameIDMap := make(map[string]string)
 
-		pods, err := ClientSet.CoreV1().Pods("").List(metav1.ListOptions{})
+		listOptions := metav1.ListOptions{}
+		listOptions.FieldSelector = fmt.Sprintf("spec.nodeName=%s", Computer)
+		pods, err := ClientSet.CoreV1().Pods("").List(listOptions)
+		
 		if err != nil {
 			message := fmt.Sprintf("Error getting pods %s\nIt is ok to log here and continue, because the logs will be missing image and Name, but the logs will still have the containerID", err.Error())
 			Log(message)
@@ -243,14 +246,10 @@ func PostDataHelper(tailPluginRecords []map[interface{}]interface{}) int {
 
 		if val, ok := imageIDMap[containerID]; ok {
 			stringMap["Image"] = val
-		} else {
-			Log("ContainerId %s not present in Map ", containerID)
 		}
 
 		if val, ok := nameIDMap[containerID]; ok {
 			stringMap["Name"] = val
-		} else {
-			Log("ContainerId %s not present in Map ", containerID)
 		}
 
 

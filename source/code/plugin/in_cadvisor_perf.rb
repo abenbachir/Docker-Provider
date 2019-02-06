@@ -18,6 +18,7 @@ module Fluent
   
       config_param :run_interval, :time, :default => '1m'
       config_param :tag, :string, :default => "oms.api.cadvisorperf"
+      config_param :mdmtag, :string, :default => "mdm.cadvisorperf"
   
       def configure (conf)
         super
@@ -55,6 +56,7 @@ module Fluent
             end 
             
             router.emit_stream(@tag, eventStream) if eventStream
+            router.emit_stream(@mdmtag, eventStream) if eventStream
             @@istestvar = ENV['ISTEST']
             if (!@@istestvar.nil? && !@@istestvar.empty? && @@istestvar.casecmp('true') == 0 && eventStream.count > 0)
               $log.info("cAdvisorPerfEmitStreamSuccess @ #{Time.now.utc.iso8601}")
