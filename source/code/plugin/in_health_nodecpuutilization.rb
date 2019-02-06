@@ -16,6 +16,7 @@ module Fluent
           require_relative 'omslog'
           require_relative 'ApplicationInsightsUtility'
           require_relative 'DockerApiClient'
+          @@nodeDataFile = "/var/opt/microsoft/docker-cimprov/NodeInfo/nodeData"
         end
     
         config_param :run_interval, :time, :default => '1m'
@@ -58,8 +59,39 @@ module Fluent
          # record['ClusterRegion'] = KubernetesApiClient.getClusterRegion
         #end
 
+        def getNodeData()
+          file = File.open(@@nodeDataFile, "r")
+          if !file.nil?
+            fileContents = file.read
+            nodeDataObject = JSON.parse(fileContents)
+            file.close
+            return nodeDataObject['cpuCapacityNanoCores']
+            # Delete the file since the state is update to deleted
+            #File.delete(filepath) if File.exist?(filepath)
+          else
+            file = File.open(@@nodeDataFile, "w")
+            if !file.nil?
+              nodeInventory = JSON.parse(KubernetesApiClient.getKubeResourceInfo("nodes?fieldSelector=metadata.name%3D#{hostName}").body)
+              #KubernetesApiClient.parseNodeLimits(nodeInventory, "capacity", "cpu", "cpuCapacityNanoCores")
+              #KubernetesApiClient.parseNodeLimits(nodeInventory, "capacity", "memory", "memoryCapacityBytes")
+              nodeInventory['items'].each do |node|
+                record['cpuCapacityNanoCores'] = KubernetesApiClient.getMetricNumericValue("capacity", node['status']['cpu']['cpuCapacityNanoCores'])
+                record['memoryCapacityBytes'] = KubernetesApiClient.getMetricNumericValue("capacity", node['status']['memory']['memoryCapacityBytes'])
+              end
+                file.write(record.to_json)
+                file.close
+            else
+                $log.warn("Exception while opening file with id: #{containerId}")
+            end            
+          end
+        end
+
         def enumerate
           begin
+            hostName = (OMS::Common.get_hostname)
+           
+
+
             currentTime = Time.now
             emitTime = currentTime.to_f
             batchTime = currentTime.utc.iso8601
@@ -67,7 +99,6 @@ module Fluent
             eventStream = MultiEventStream.new
             #$log.info("in_docker_health::Making a call to get docker info @ #{Time.now.utc.iso8601}")
             isDockerStateFlush = false
-            hostName = (OMS::Common.get_hostname)
             # Get node cpu utilization from cAdvisor
             metricInfo = JSON.parse(getSummaryStatsFromCAdvisor().body)
             cpuUsageNanoSecondsRate = CAdvisorMetricsAPIClient.getNodeMetricItemRate(metricInfo, hostName, "cpu", "usageCoreNanoSeconds", "cpuUsageNanoCores")
