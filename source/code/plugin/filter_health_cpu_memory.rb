@@ -15,12 +15,13 @@ module Fluent
         #config_param :custom_metrics_azure_regions, :string
         #config_param :metrics_to_collect, :string, :default => 'cpuUsageNanoCores,memoryWorkingSetBytes,memoryRssBytes'
         
-        @@previousCpuUtilPercentage = ''
-        @@previousPreviousCpuUtilPercentage = ''
-        @@currentCpuUtilPercentage = ''
-        @@previousMemoryRssPercentage = ''
-        @@previousPreviousMemoryRssPercentage = ''
-        @@currentMemoryRssPercentage = ''
+        @@previousCpuHealthState = ''
+        @@previousPreviousCpuHealthState = ''
+        @@currentCpuHealthState = ''
+        @@lastEmittedCpuHealthState = ''
+        @@previousMemoryRssHealthState = ''
+        @@previousPreviousMemoryRssHealthState = ''
+        @@currentMemoryRssHealthState = ''
 
 		def initialize
 			super
@@ -53,11 +54,31 @@ module Fluent
             healthRecord['Computer'] = hostName
             metricName = record['data']['baseData']['metric']
             metricValue = record['data']['baseData']['series'][0]['min']
+            if metricValue_f < 80.0
+                #nodeCpuHealthState = 'Pass'
+                healthState = "Pass"
+             elsif metricValue_f > 90.0
+                healthState = "Fail"
+             else
+                healthState = "Warning"
+             end
             if metricName == "cpuUsageNanoCoresPercentage"
-                #@log.debug "in logger yayyy"
-                if 
+                @log.debug "metricName: #{metricName}"
+                @log.debug "metricValue: #{metricValue}"
+                #currentCpuHealthState = ""
+                if (healthState == @@previousCpuHealthState) && (healthState == @@previousPreviousCpuHealthState)
+                    record['NodeCpuHealthState'] = healthState
+                end
+                @@previousPreviousCpuHealthState = @@previousCpuHealthState
+                @@previousCpuHealthState = healthState
             elsif metricName == "memoryRssBytesPercentage"
-
+                @log.debug "metricName: #{metricName}"
+                @log.debug "metricValue: #{metricValue}"
+                if (healthState == @@previousMemoryRssHealthState) && (healthState == @@previousPreviousMemoryRssHealthState)
+                    record['NodeMemoryRssHealthState'] = healthState
+                end
+                @@previousPreviousMemoryRssHealthState = @@previousMemoryRssHealthState
+                @@previousMemoryRssHealthState = healthState
             end
             healthRecord
         end
