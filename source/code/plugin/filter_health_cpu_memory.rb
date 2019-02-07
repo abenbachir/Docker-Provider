@@ -5,15 +5,12 @@
 module Fluent
     require 'logger'
     require 'json'
-    #require_relative 'oms_common'
 
 	class CPUMemoryHealthFilter < Filter
 		Fluent::Plugin.register_filter('filter_health_cpu_memory', self)
 		
 		config_param :enable_log, :integer, :default => 0
         config_param :log_path, :string, :default => '/var/opt/microsoft/omsagent/log/filter_health_cpu_memory.log'
-        #config_param :custom_metrics_azure_regions, :string
-        #config_param :metrics_to_collect, :string, :default => 'cpuUsageNanoCores,memoryWorkingSetBytes,memoryRssBytes'
         
         @@previousCpuHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         @@previousPreviousCpuHealthDetails = {"State": "", "Time": "", "Percentage": ""}
@@ -21,14 +18,12 @@ module Fluent
         @@nodeCpuHealthDataTimeTracker  = DateTime.now.to_time.to_i
         @@nodeMemoryRssDataTimeTracker  = DateTime.now.to_time.to_i
 
-        #@@lastEmittedCpuHealthState = ''
         @@previousMemoryRssHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         @@previousPreviousMemoryRssHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         @@currentHealthMetrics = {}
         @@clusterName = KubernetesApiClient.getClusterName
         @@clusterId = KubernetesApiClient.getClusterId
         @@clusterRegion = KubernetesApiClient.getClusterRegion
-        #@@currentMemoryRssHealthState = ''
 
 		def initialize
 			super
@@ -62,6 +57,7 @@ module Fluent
             cpuHealthRecord['ClusterName'] = @@clusterName
             cpuHealthRecord['ClusterId'] = @@clusterId
             cpuHealthRecord['ClusterRegion'] = @@clusterRegion
+            cpuHealthRecord['Computer'] = @@currentHealthMetrics['computer']
              cpuHealthState = ''
              if cpuMetricValue.to_f < 80.0
                 #nodeCpuHealthState = 'Pass'
@@ -106,6 +102,8 @@ module Fluent
             memRssHealthRecord['ClusterName'] = @@clusterName
             memRssHealthRecord['ClusterId'] = @@clusterId
             memRssHealthRecord['ClusterRegion'] = @@clusterRegion
+            memRssHealthRecord['Computer'] = @@currentHealthMetrics['computer']
+
             memoryRssHealthState = ''
              if memoryRssMetricValue.to_f < 80.0
                 #nodeCpuHealthState = 'Pass'
@@ -170,17 +168,7 @@ module Fluent
             health_es = MultiEventStream.new
             begin
                 es.each { |time, record|
-                #begin
-                    #filteredRecord = filter(tag, time, record)
-                    #currentHealthMetrics['TimeStamp'] = 
                     filter(tag, time, record)
-                    #@@currentHealthMetrics.merge!(filteredRecord)
-                    #currentHealthMetrics[filteredRecord.keys.first.to_s] = filtered_record[filteredRecord.keys.first.to_s]
-                    #TODO: Optimize this to read these values only from first record
-                    #processHealthMerics(currentHealthMetrics)
-                    #health_es.add(time, filtered_record) if filtered_record
-                    #router.emit_stream('oms.rashmi', health_es) if health_es
-                #end  
                 }
                 healthRecords = processHealthMetrics
                 healthRecords.each {|healthRecord| 
