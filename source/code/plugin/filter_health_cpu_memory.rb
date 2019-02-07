@@ -15,12 +15,12 @@ module Fluent
         #config_param :custom_metrics_azure_regions, :string
         #config_param :metrics_to_collect, :string, :default => 'cpuUsageNanoCores,memoryWorkingSetBytes,memoryRssBytes'
         
-        @@previousCpuHealthState = {"State": "", "Time": ""}
-        @@previousPreviousCpuHealthState = {"State": "", "Time": ""}
+        @@previousCpuHealthDetails = {"State": "", "Time": "", "Percentage": ""}
+        @@previousPreviousCpuHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         #@@currentCpuHealthState = ''
         #@@lastEmittedCpuHealthState = ''
-        @@previousMemoryRssHealthState = {"State": "", "Time": ""}
-        @@previousPreviousMemoryRssHealthState = {"State": "", "Time": ""}
+        @@previousMemoryRssHealthDetails = {"State": "", "Time": "", "Percentage": ""}
+        @@previousPreviousMemoryRssHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         #@@currentMemoryRssHealthState = ''
 
 		def initialize
@@ -68,32 +68,34 @@ module Fluent
                 @log.debug "metricName: #{metricName}"
                 @log.debug "metricValue: #{metricValue}"
                 #currentCpuHealthState = ""
-                if (healthState == @@previousCpuHealthState['State']) && (healthState == @@previousPreviousCpuHealthState['State'])
+                if (healthState == @@previousCpuHealthDetails['State']) && (healthState == @@previousPreviousCpuHealthDetails['State'])
                     healthRecord['NodeCpuHealthState'] = healthState
                     healthRecord['NodeCpuUtilizationPercentage'] = metricValue
-                    #healthRecord['TimeStateDetected'] = @@previousPreviousCpuHealthState['Time']
-                    healthRecord['CollectionTime'] = @@previousPreviousCpuHealthState['Time']
+                    #healthRecord['TimeStateDetected'] = @@previousPreviousCpuHealthDetails['Time']
+                    healthRecord['CollectionTime'] = @@previousPreviousCpuHealthDetails['Time']
+                    healthRecord['PrevNodeCpuUtilizationPercentage'] = { "Percent": @@previousCpuHealthDetails["Percentage"], "TimeStamp": @@previousCpuHealthDetails["Time"]}
+                    healthRecord['PrevPrevNodeCpuUtilizationPercentage'] = { "Percent": @@previousPreviousCpuHealthDetails["Percentage"], "TimeStamp": @@previousPreviousCpuHealthDetails["Time"]}
                     updateHealthState = true
                 end
-                @@previousPreviousCpuHealthState['State'] = @@previousCpuHealthState['State']
-                @@previousPreviousCpuHealthState['Time'] = @@previousCpuHealthState['Time']
-                @@previousCpuHealthState['State'] = healthState
-                @@previousCpuHealthState['Time'] = metricTime
-                @@previousCpuHealthState = healthState
+                @@previousPreviousCpuHealthDetails['State'] = @@previousCpuHealthDetails['State']
+                @@previousPreviousCpuHealthDetails['Time'] = @@previousCpuHealthDetails['Time']
+                @@previousCpuHealthDetails['State'] = healthState
+                @@previousCpuHealthDetails['Time'] = metricTime
+                @@previousCpuHealthDetails = healthState
             elsif metricName == "memoryRssBytesPercentage"
                 @log.debug "metricName: #{metricName}"
                 @log.debug "metricValue: #{metricValue}"
-                if (healthState == @@previousMemoryRssHealthState['State']) && (healthState == @@previousPreviousMemoryRssHealthState['State'])
+                if (healthState == @@previousMemoryRssHealthDetails['State']) && (healthState == @@previousPreviousMemoryRssHealthDetails['State'])
                     healthRecord['NodeMemoryRssHealthState'] = healthState
                     healthRecord['NodeMemoryRssPercentage'] = metricValue
-                    healthRecord['CollectionTime'] = @@previousMemoryRssHealthState['Time']
-                    #healthRecord['TimeStateDetected'] = @@previousMemoryRssHealthState['Time']
+                    healthRecord['CollectionTime'] = @@previousMemoryRssHealthDetails['Time']
+                    #healthRecord['TimeStateDetected'] = @@previousMemoryRssHealthDetails['Time']
                     updateHealthState = true
                 end
-                @@previousPreviousMemoryRssHealthState['State'] = @@previousMemoryRssHealthState['State']
-                @@previousPreviousMemoryRssHealthState['Time'] = @@previousMemoryRssHealthState['Time']
-                @@previousMemoryRssHealthState['State'] = healthState
-                @@previousMemoryRssHealthState['Time'] = metricTime
+                @@previousPreviousMemoryRssHealthDetails['State'] = @@previousMemoryRssHealthDetails['State']
+                @@previousPreviousMemoryRssHealthDetails['Time'] = @@previousMemoryRssHealthDetails['Time']
+                @@previousMemoryRssHealthDetails['State'] = healthState
+                @@previousMemoryRssHealthDetails['Time'] = metricTime
             end
             if updateHealthState
                 return healthRecord
