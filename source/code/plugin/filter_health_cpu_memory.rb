@@ -18,6 +18,7 @@ module Fluent
         @@previousCpuHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         @@previousPreviousCpuHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         @@currentHealthMetrics = {}
+        @@nodeCpuHealthDataTimeTracker  = DateTime.now.to_time.to_i
 
         #@@lastEmittedCpuHealthState = ''
         @@previousMemoryRssHealthDetails = {"State": "", "Time": "", "Percentage": ""}
@@ -44,6 +45,9 @@ module Fluent
 
         def start
             super
+            @@clusterName = KubernetesApiClient.getClusterName
+            @@clusterId = KubernetesApiClient.getClusterId
+            @@clusterRegion = KubernetesApiClient.getClusterRegion
         end
 
 		def shutdown
@@ -114,18 +118,15 @@ module Fluent
             end
         end
 
-        def processHealthMetrics()
-            healthRecord = {}
+        def processCpuMetrics(cpuMetricValue, cpuMetricPercentValue, healthRecords)
+             # Get node CPU usage health
+            cpuHealthRecord = {}
             currentCpuHealthDetails = {}
-            cpuMetricPercentValue = @@currentHealthMetrics['cpuUsageNanoCoresPercentage']
-            cpuMetricValue = @@currentHealthMetrics['cpuUsageNanoCores']
-            memoryRssMetricPercentValue = @@currentHealthMetrics['memoryRssBytesPercentage']
-            memoryRssMetricValue = @@currentHealthMetrics['memoryRssBytes']
-            updateCpuHealthState = false
-            updateMemoryRssHealthState = false
-
-            # Get Node CPU Usage health
-            if cpuMetricValue.to_f < 80.0
+            cpuHealthRecord['ClusterName'] = @@clusterName
+            cpuHealthRecord['ClusterId'] = @@clusterId
+            cpuHealthRecord['ClusterRegion'] = @@clusterRegion
+             cpuHealthState = ''
+             if cpuMetricValue.to_f < 80.0
                 #nodeCpuHealthState = 'Pass'
                 cpuHealthState = "Pass"
              elsif cpuMetricValue.to_f > 90.0
@@ -139,24 +140,68 @@ module Fluent
              currentCpuHealthDetails['CPUUsageMillicores'] = cpuMetricValue
 
              if (cpuHealthState == @@previousCpuHealthDetails['State']) && (cpuHealthState == @@previousPreviousCpuHealthDetails['State'])
-                healthRecord['NodeCpuHealthState'] = cpuHealthState
-                healthRecord['NodeCpuUsagePercentage'] = cpuMetricPercentValue
-                healthRecord['NodeCpuUsageMilliCores'] = cpuMetricValue
+                cpuHealthRecord['NodeCpuHealthState'] = cpuHealthState
+                cpuHealthRecord['NodeCpuUsagePercentage'] = cpuMetricPercentValue
+                cpuHealthRecord['NodeCpuUsageMilliCores'] = cpuMetricValue
                 #healthRecord['TimeStateDetected'] = @@previousPreviousCpuHealthDetails['Time']
-                healthRecord['CollectionTime'] = @@previousPreviousCpuHealthDetails['Time']
-                healthRecord['PrevNodeCpuUsageDetails'] = { "Percent": @@previousCpuHealthDetails["Percentage"], "TimeStamp": @@previousCpuHealthDetails["Time"], "Millicores": @@previousCpuHealthDetails['CPUUsageMillicores']}
-                healthRecord['PrevPrevNodeCpuUsageDetails'] = { "Percent": @@previousPreviousCpuHealthDetails["Percentage"], "TimeStamp": @@previousPreviousCpuHealthDetails["Time"], "Millicores": @@previousPreviousCpuHealthDetails['CPUUsageMillicores']}
-                updateHealthState = true
+                cpuHealthRecord['CollectionTime'] = @@previousPreviousCpuHealthDetails['Time']
+                cpuHealthRecord['PrevNodeCpuUsageDetails'] = { "Percent": @@previousCpuHealthDetails["CPUUsagePercentage"], "TimeStamp": @@previousCpuHealthDetails["Time"], "Millicores": @@previousCpuHealthDetails['CPUUsageMillicores']}
+                cpuHealthRecord['PrevPrevNodeCpuUsageDetails'] = { "Percent": @@previousPreviousCpuHealthDetails["CPUUsagePercentage"], "TimeStamp": @@previousPreviousCpuHealthDetails["Time"], "Millicores": @@previousPreviousCpuHealthDetails['CPUUsageMillicores']}
+                updateCpuHealthState = true
             end
             @@previousPreviousCpuHealthDetails = @@previousCpuHealthDetails.clone
             @@previousCpuHealthDetails = currentCpuHealthDetails.clone
+            if updateCpuHealthState
+                healthRecords.push(cpuHealthRecord)
+            end
+        end
 
-            #@@previousPreviousCpuHealthDetails['State'] = @@previousCpuHealthDetails['State']
-            #@@previousPreviousCpuHealthDetails['Time'] = @@previousCpuHealthDetails['Time']
-            #@@previousCpuHealthDetails['State'] = healthState
-            #@@previousCpuHealthDetails['Time'] = metricTime
-            #@@previousCpuHealthDetails = healthState
+        def processMemoryRssHealthMetrics(memoryRssMetricValue, memoryRssMetricPercentValue, healthRecords)
+             # Get node memory RSS health
+            memRssHealthRecord = {}
+            currentMemoryRssHealthDetails = {}
+            memRssHealthRecord['ClusterName'] = @@clusterName
+            memRssHealthRecord['ClusterId'] = @@clusterId
+            memRssHealthRecord['ClusterRegion'] = @@clusterRegion
+            memoryRssHealthState = ''
+             if memoryRssMetricValue.to_f < 80.0
+                #nodeCpuHealthState = 'Pass'
+                memoryRssHealthState = "Pass"
+             elsif memoryRssMetricValue.to_f > 90.0
+                memoryRssHealthState = "Fail"
+             else
+                memoryRssHealthState = "Warning"
+             end
+             currentMemoryRssHealthDetails['State'] = memoryRssHealthState
+             currentMemoryRssHealthDetails['Time'] = @@currentHealthMetrics['metricTime']
+             currentMemoryRssHealthDetails['memoryRssPercentage'] = memoryRssMetricPercentValue
+             currentMemoryRssHealthDetails['memoryRssBytes'] = memoryRssMetricValue
 
+             if (memoryRssHealthState == @@previousMemoryRssHealthDetails['State']) && (memoryRssHealthState == @@previousPreviousMemoryRssHealthDetails['State'])
+                memRssHealthRecord['NodeMemoryRssHealthState'] = memoryRssHealthState
+                memRssHealthRecord['NodeMemoryRssPercentage'] = memoryRssMetricPercentValue
+                memRssHealthRecord['NodeMemoryRssBytes'] = memoryRssMetricValue
+                #healthRecord['TimeStateDetected'] = @@previousPreviousCpuHealthDetails['Time']
+                memRssHealthRecord['CollectionTime'] = @@previousPreviousMemoryRssHealthDetails['Time']
+                memRssHealthRecord['PrevNodeMemoryRssDetails'] = { "Percent": @@previousMemoryRssHealthDetails["memoryRssPercentage"], "TimeStamp": @@previousMemoryRssHealthDetails["Time"], "Bytes": @@previousMemoryRssHealthDetails['memoryRssBytes']}
+                memRssHealthRecord['PrevPrevNodeMemoryRssDetails'] = { "Percent": @@previousPreviousMemoryRssHealthDetails["memoryRssPercentage"], "TimeStamp": @@previousPreviousMemoryRssHealthDetails["Time"], "Bytes": @@previousPreviousMemoryRssHealthDetails['memoryRssBytes']}
+                updateMemoryRssHealthState = true
+            end
+            @@previousPreviousMemoryRssHealthDetails = @@previousMemoryRssHealthDetails.clone
+            @@previousMemoryRssHealthDetails = currentMemoryRssHealthDetails.clone
+            if updateMemoryRssHealthState
+                healthRecords.push(memRssHealthRecord)
+            end
+        end
+
+        def processHealthMetrics()
+            healthRecords = []
+            cpuMetricPercentValue = @@currentHealthMetrics['cpuUsageNanoCoresPercentage']
+            cpuMetricValue = @@currentHealthMetrics['cpuUsageNanoCores']
+            memoryRssMetricPercentValue = @@currentHealthMetrics['memoryRssBytesPercentage']
+            memoryRssMetricValue = @@currentHealthMetrics['memoryRssBytes']
+            processCpuMetrics(cpuMetricValue, cpuMetricPercentValue, healthRecords)
+            processMemoryRssHealthMetrics(memoryRssMetricValue, memoryRssMetricPercentValue, healthRecords)
         end
 
         def filter(tag, time, record)
