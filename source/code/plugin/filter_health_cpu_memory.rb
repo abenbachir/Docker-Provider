@@ -19,6 +19,7 @@ module Fluent
         @@previousPreviousCpuHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         @@currentHealthMetrics = {}
         @@nodeCpuHealthDataTimeTracker  = DateTime.now.to_time.to_i
+        @@nodeMemoryRssDataTimeTracker  = DateTime.now.to_time.to_i
 
         #@@lastEmittedCpuHealthState = ''
         @@previousMemoryRssHealthDetails = {"State": "", "Time": "", "Percentage": ""}
@@ -53,70 +54,6 @@ module Fluent
 		def shutdown
 			super
 		end
-
-        def filter(tag, time, record)
-            healthRecord = {}
-            #hostName = (OMS::Common.get_hostname)
-            #currentTime = Time.now
-            #batchTime = currentTime.utc.iso8601
-            #healthRecord['CollectionTime'] = batchTime #This is the time that is mapped to become TimeGenerated
-            healthRecord['ClusterName'] = @@clusterName
-            healthRecord['ClusterId'] = @@clusterId
-            healthRecord['ClusterRegion'] = @@clusterRegion
-            healthRecord['Computer'] = record['data']['baseData']['series'][0]['dimValues'][0]
-            metricTime = record['time']
-            metricName = record['data']['baseData']['metric']
-            metricValue = record['data']['baseData']['series'][0]['min']
-            updateHealthState = false
-            if metricValue_f < 80.0
-                #nodeCpuHealthState = 'Pass'
-                healthState = "Pass"
-             elsif metricValue_f > 90.0
-                healthState = "Fail"
-             else
-                healthState = "Warning"
-             end
-            if metricName == "cpuUsageNanoCoresPercentage"
-                @log.debug "metricName: #{metricName}"
-                @log.debug "metricValue: #{metricValue}"
-                #currentCpuHealthState = ""
-                if (healthState == @@previousCpuHealthDetails['State']) && (healthState == @@previousPreviousCpuHealthDetails['State'])
-                    healthRecord['NodeCpuHealthState'] = healthState
-                    healthRecord['NodeCpuUtilizationPercentage'] = metricValue
-                    #healthRecord['TimeStateDetected'] = @@previousPreviousCpuHealthDetails['Time']
-                    healthRecord['CollectionTime'] = @@previousPreviousCpuHealthDetails['Time']
-                    healthRecord['PrevNodeCpuUtilizationDetails'] = { "Percent": @@previousCpuHealthDetails["Percentage"], "TimeStamp": @@previousCpuHealthDetails["Time"]}
-                    healthRecord['PrevPrevNodeCpuUtilizationDetails'] = { "Percent": @@previousPreviousCpuHealthDetails["Percentage"], "TimeStamp": @@previousPreviousCpuHealthDetails["Time"]}
-                    updateHealthState = true
-                end
-                @@previousPreviousCpuHealthDetails['State'] = @@previousCpuHealthDetails['State']
-                @@previousPreviousCpuHealthDetails['Time'] = @@previousCpuHealthDetails['Time']
-                @@previousCpuHealthDetails['State'] = healthState
-                @@previousCpuHealthDetails['Time'] = metricTime
-                @@previousCpuHealthDetails = healthState
-            elsif metricName == "memoryRssBytesPercentage"
-                @log.debug "metricName: #{metricName}"
-                @log.debug "metricValue: #{metricValue}"
-                if (healthState == @@previousMemoryRssHealthDetails['State']) && (healthState == @@previousPreviousMemoryRssHealthDetails['State'])
-                    healthRecord['NodeMemoryRssHealthState'] = healthState
-                    healthRecord['NodeMemoryRssPercentage'] = metricValue
-                    healthRecord['CollectionTime'] = @@previousMemoryRssHealthDetails['Time']
-                    healthRecord['PrevNodeMemoryRssDetails'] = { "Percent": @@previousMemoryRssHealthDetails["Percentage"], "TimeStamp": @@previousMemoryRssHealthDetails["Time"]}
-                    healthRecord['PrevPrevNodeMemoryRssDetails'] = { "Percent": @@previousPreviousMemoryRssHealthDetails["Percentage"], "TimeStamp": @@previousPreviousMemoryRssHealthDetails["Time"]}
-                    #healthRecord['TimeStateDetected'] = @@previousMemoryRssHealthDetails['Time']
-                    updateHealthState = true
-                end
-                @@previousPreviousMemoryRssHealthDetails['State'] = @@previousMemoryRssHealthDetails['State']
-                @@previousPreviousMemoryRssHealthDetails['Time'] = @@previousMemoryRssHealthDetails['Time']
-                @@previousMemoryRssHealthDetails['State'] = healthState
-                @@previousMemoryRssHealthDetails['Time'] = metricTime
-            end
-            if updateHealthState
-                return healthRecord
-            else
-                return nil
-            end
-        end
 
         def processCpuMetrics(cpuMetricValue, cpuMetricPercentValue, healthRecords)
              # Get node CPU usage health
@@ -153,6 +90,7 @@ module Fluent
             @@previousCpuHealthDetails = currentCpuHealthDetails.clone
             if updateCpuHealthState
                 healthRecords.push(cpuHealthRecord)
+                @@nodeCpuHealthDataTimeTracker = DateTime.now.to_time.to_i
             end
         end
 
@@ -191,6 +129,7 @@ module Fluent
             @@previousMemoryRssHealthDetails = currentMemoryRssHealthDetails.clone
             if updateMemoryRssHealthState
                 healthRecords.push(memRssHealthRecord)
+                @@nodeMemoryRssDataTimeTracker = DateTime.now.to_time.to_i
             end
         end
 
@@ -202,12 +141,11 @@ module Fluent
             memoryRssMetricValue = @@currentHealthMetrics['memoryRssBytes']
             processCpuMetrics(cpuMetricValue, cpuMetricPercentValue, healthRecords)
             processMemoryRssHealthMetrics(memoryRssMetricValue, memoryRssMetricPercentValue, healthRecords)
+            return healthRecords
         end
 
         def filter(tag, time, record)
             # Reading all the records to populate a hash for CPU and memory utilization percentages and values
-            #metricRecord = {}
-            #metricRecord[record['data']['baseData']['metric']] = record['data']['baseData']['series'][0]['min']
             @@currentHealthMetrics[record['data']['baseData']['metric']] = record['data']['baseData']['series'][0]['min']
             if !(@@currentHealthMetrics.has_key?("metricTime"))
                 @@currentHealthMetrics['metricTime'] = record['time']
@@ -215,14 +153,11 @@ module Fluent
             if !(@@currentHealthMetrics.has_key?("computer"))
                 @@currentHealthMetrics['computer'] = record['data']['baseData']['series'][0]['dimValues'][0]
             end
-            #@@currentHealthMetrics[record['data']['baseData']['metric']] = record['data']['baseData']['series'][0]['min']
-            #@@currentHealthMetrics
             return nil
         end
 
         def filter_stream(tag, es)
             health_es = MultiEventStream.new
-            #currentHealthMetrics = {}
             begin
                 es.each { |time, record|
                 #begin
@@ -237,10 +172,15 @@ module Fluent
                     #router.emit_stream('oms.rashmi', health_es) if health_es
                 #end  
                 }
-                processHealthMetrics
+                healthRecords = processHealthMetrics
+                healthRecords.each {|healthRecord| 
+                    health_es.add(time, healthRecord) if healthRecord
+                    router.emit_stream('oms.rashmi', health_es) if health_es
+                } if healthRecords
             rescue => e
                 router.emit_error_event(tag, time, record, e)
             end
+            # Return the event stream as is for mdm perf metrics
             es
         end
 
