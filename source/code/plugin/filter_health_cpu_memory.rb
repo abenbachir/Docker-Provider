@@ -15,13 +15,13 @@ module Fluent
         #config_param :custom_metrics_azure_regions, :string
         #config_param :metrics_to_collect, :string, :default => 'cpuUsageNanoCores,memoryWorkingSetBytes,memoryRssBytes'
         
-        @@previousCpuHealthState = ''
-        @@previousPreviousCpuHealthState = ''
-        @@currentCpuHealthState = ''
-        @@lastEmittedCpuHealthState = ''
-        @@previousMemoryRssHealthState = ''
-        @@previousPreviousMemoryRssHealthState = ''
-        @@currentMemoryRssHealthState = ''
+        @@previousCpuHealthState = {"State": "", "Time": ""}
+        @@previousPreviousCpuHealthState = {"State": "", "Time": ""}
+        #@@currentCpuHealthState = ''
+        #@@lastEmittedCpuHealthState = ''
+        @@previousMemoryRssHealthState = {"State": "", "Time": ""}
+        @@previousPreviousMemoryRssHealthState = {"State": "", "Time": ""}
+        #@@currentMemoryRssHealthState = ''
 
 		def initialize
 			super
@@ -50,10 +50,12 @@ module Fluent
             hostName = (OMS::Common.get_hostname)
             currentTime = Time.now
             batchTime = currentTime.utc.iso8601
-            healthRecord['CollectionTime'] = batchTime #This is the time that is mapped to become TimeGenerated
+            #healthRecord['CollectionTime'] = batchTime #This is the time that is mapped to become TimeGenerated
             healthRecord['Computer'] = hostName
+            metricTime = record['time']
             metricName = record['data']['baseData']['metric']
             metricValue = record['data']['baseData']['series'][0]['min']
+            updateHealthState = false
             if metricValue_f < 80.0
                 #nodeCpuHealthState = 'Pass'
                 healthState = "Pass"
@@ -66,21 +68,38 @@ module Fluent
                 @log.debug "metricName: #{metricName}"
                 @log.debug "metricValue: #{metricValue}"
                 #currentCpuHealthState = ""
-                if (healthState == @@previousCpuHealthState) && (healthState == @@previousPreviousCpuHealthState)
-                    record['NodeCpuHealthState'] = healthState
+                if (healthState == @@previousCpuHealthState['State']) && (healthState == @@previousPreviousCpuHealthState['State'])
+                    healthRecord['NodeCpuHealthState'] = healthState
+                    healthRecord['NodeCpuUtilizationPercentage'] = metricValue
+                    #healthRecord['TimeStateDetected'] = @@previousPreviousCpuHealthState['Time']
+                    healthRecord['CollectionTime'] = @@previousPreviousCpuHealthState['Time']
+                    updateHealthState = true
                 end
-                @@previousPreviousCpuHealthState = @@previousCpuHealthState
+                @@previousPreviousCpuHealthState['State'] = @@previousCpuHealthState['State']
+                @@previousPreviousCpuHealthState['Time'] = @@previousCpuHealthState['Time']
+                @@previousCpuHealthState['State'] = healthState
+                @@previousCpuHealthState['Time'] = metricTime
                 @@previousCpuHealthState = healthState
             elsif metricName == "memoryRssBytesPercentage"
                 @log.debug "metricName: #{metricName}"
                 @log.debug "metricValue: #{metricValue}"
-                if (healthState == @@previousMemoryRssHealthState) && (healthState == @@previousPreviousMemoryRssHealthState)
-                    record['NodeMemoryRssHealthState'] = healthState
+                if (healthState == @@previousMemoryRssHealthState['State']) && (healthState == @@previousPreviousMemoryRssHealthState['State'])
+                    healthRecord['NodeMemoryRssHealthState'] = healthState
+                    healthRecord['NodeMemoryRssPercentage'] = metricValue
+                    healthRecord['CollectionTime'] = @@previousMemoryRssHealthState['Time']
+                    #healthRecord['TimeStateDetected'] = @@previousMemoryRssHealthState['Time']
+                    updateHealthState = true
                 end
-                @@previousPreviousMemoryRssHealthState = @@previousMemoryRssHealthState
-                @@previousMemoryRssHealthState = healthState
+                @@previousPreviousMemoryRssHealthState['State'] = @@previousMemoryRssHealthState['State']
+                @@previousPreviousMemoryRssHealthState['Time'] = @@previousMemoryRssHealthState['Time']
+                @@previousMemoryRssHealthState['State'] = healthState
+                @@previousMemoryRssHealthState['Time'] = metricTime
             end
-            healthRecord
+            if updateHealthState
+                return healthRecord
+            else
+                return nil
+            end
         end
 
         def filter_stream(tag, es)
