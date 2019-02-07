@@ -76,7 +76,12 @@ module Fluent
              currentCpuHealthDetails['CPUUsagePercentage'] = cpuMetricPercentValue
              currentCpuHealthDetails['CPUUsageMillicores'] = cpuMetricValue
 
-             if (cpuHealthState == @@previousCpuHealthDetails['State']) && (cpuHealthState == @@previousPreviousCpuHealthDetails['State'])
+            currentTime = DateTime.now.to_time.to_i
+            timeDifference =  (currentTime - @@nodeCpuHealthDataTimeTracker).abs
+            timeDifferenceInMinutes = timeDifference/60
+
+             if ((cpuHealthState == @@previousCpuHealthDetails['State']) && (cpuHealthState == @@previousPreviousCpuHealthDetails['State']) ||
+                 timeDifferenceInMinutes > 50)
                 cpuHealthRecord['NodeCpuHealthState'] = cpuHealthState
                 cpuHealthRecord['NodeCpuUsagePercentage'] = cpuMetricPercentValue
                 cpuHealthRecord['NodeCpuUsageMilliCores'] = cpuMetricValue
@@ -115,7 +120,12 @@ module Fluent
              currentMemoryRssHealthDetails['memoryRssPercentage'] = memoryRssMetricPercentValue
              currentMemoryRssHealthDetails['memoryRssBytes'] = memoryRssMetricValue
 
-             if (memoryRssHealthState == @@previousMemoryRssHealthDetails['State']) && (memoryRssHealthState == @@previousPreviousMemoryRssHealthDetails['State'])
+            currentTime = DateTime.now.to_time.to_i
+            timeDifference =  (currentTime - @@nodeMemoryRssDataTimeTracker).abs
+            timeDifferenceInMinutes = timeDifference/60
+
+             if ((memoryRssHealthState == @@previousMemoryRssHealthDetails['State']) && (memoryRssHealthState == @@previousPreviousMemoryRssHealthDetails['State']) ||
+                 timeDifferenceInMinutes > 50)
                 memRssHealthRecord['NodeMemoryRssHealthState'] = memoryRssHealthState
                 memRssHealthRecord['NodeMemoryRssPercentage'] = memoryRssMetricPercentValue
                 memRssHealthRecord['NodeMemoryRssBytes'] = memoryRssMetricValue
@@ -129,7 +139,7 @@ module Fluent
             @@previousMemoryRssHealthDetails = currentMemoryRssHealthDetails.clone
             if updateMemoryRssHealthState
                 healthRecords.push(memRssHealthRecord)
-                @@nodeMemoryRssDataTimeTracker = DateTime.now.to_time.to_i
+                @@nodeMemoryRssDataTimeTracker = currentTime
             end
         end
 
