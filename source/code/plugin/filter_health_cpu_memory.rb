@@ -121,7 +121,10 @@ module Fluent
             cpuMetricValue = @@currentHealthMetrics['cpuUsageNanoCores']
             memoryRssMetricPercentValue = @@currentHealthMetrics['memoryRssBytesPercentage']
             memoryRssMetricValue = @@currentHealthMetrics['memoryRssBytes']
-            updateHealthState = false
+            updateCpuHealthState = false
+            updateMemoryRssHealthState = false
+
+            # Get Node CPU Usage health
             if cpuMetricValue.to_f < 80.0
                 #nodeCpuHealthState = 'Pass'
                 cpuHealthState = "Pass"
@@ -132,25 +135,27 @@ module Fluent
              end
              currentCpuHealthDetails['State'] = cpuHealthState
              currentCpuHealthDetails['Time'] = @@currentHealthMetrics['metricTime']
-             currentCpuHealthDetails['CPUUtilPercentage'] = cpuMetricPercentValue
+             currentCpuHealthDetails['CPUUsagePercentage'] = cpuMetricPercentValue
              currentCpuHealthDetails['CPUUsageMillicores'] = cpuMetricValue
 
              if (cpuHealthState == @@previousCpuHealthDetails['State']) && (cpuHealthState == @@previousPreviousCpuHealthDetails['State'])
                 healthRecord['NodeCpuHealthState'] = cpuHealthState
-                healthRecord['NodeCpuUtilizationPercentage'] = cpuMetricPercentValue
-                healthRecord['NodeCpuMilliCores'] = cpuMetricValue
+                healthRecord['NodeCpuUsagePercentage'] = cpuMetricPercentValue
+                healthRecord['NodeCpuUsageMilliCores'] = cpuMetricValue
                 #healthRecord['TimeStateDetected'] = @@previousPreviousCpuHealthDetails['Time']
                 healthRecord['CollectionTime'] = @@previousPreviousCpuHealthDetails['Time']
-                healthRecord['PrevNodeCpuUtilizationDetails'] = { "Percent": @@previousCpuHealthDetails["Percentage"], "TimeStamp": @@previousCpuHealthDetails["Time"], "Millicores": @@previousCpuHealthDetails['CPUUsageMillicores']}
-                healthRecord['PrevPrevNodeCpuUtilizationDetails'] = { "Percent": @@previousPreviousCpuHealthDetails["Percentage"], "TimeStamp": @@previousPreviousCpuHealthDetails["Time"], "Millicores": @@previousPreviousCpuHealthDetails['CPUUsageMillicores']}
+                healthRecord['PrevNodeCpuUsageDetails'] = { "Percent": @@previousCpuHealthDetails["Percentage"], "TimeStamp": @@previousCpuHealthDetails["Time"], "Millicores": @@previousCpuHealthDetails['CPUUsageMillicores']}
+                healthRecord['PrevPrevNodeCpuUsageDetails'] = { "Percent": @@previousPreviousCpuHealthDetails["Percentage"], "TimeStamp": @@previousPreviousCpuHealthDetails["Time"], "Millicores": @@previousPreviousCpuHealthDetails['CPUUsageMillicores']}
                 updateHealthState = true
             end
-            @@previousPreviousCpuHealthDetails['State'] = @@previousCpuHealthDetails['State']
-            @@previousPreviousCpuHealthDetails['Time'] = @@previousCpuHealthDetails['Time']
-            @@previousCpuHealthDetails['State'] = healthState
-            @@previousCpuHealthDetails['Time'] = metricTime
-            @@previousCpuHealthDetails = healthState
+            @@previousPreviousCpuHealthDetails = @@previousCpuHealthDetails.clone
+            @@previousCpuHealthDetails = currentCpuHealthDetails.clone
 
+            #@@previousPreviousCpuHealthDetails['State'] = @@previousCpuHealthDetails['State']
+            #@@previousPreviousCpuHealthDetails['Time'] = @@previousCpuHealthDetails['Time']
+            #@@previousCpuHealthDetails['State'] = healthState
+            #@@previousCpuHealthDetails['Time'] = metricTime
+            #@@previousCpuHealthDetails = healthState
 
         end
 
