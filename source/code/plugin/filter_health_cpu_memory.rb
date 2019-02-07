@@ -5,7 +5,7 @@
 module Fluent
     require 'logger'
     require 'json'
-    require_relative 'oms_common'
+    #require_relative 'oms_common'
 
 	class CPUMemoryHealthFilter < Filter
 		Fluent::Plugin.register_filter('filter_health_cpu_memory', self)
@@ -21,6 +21,9 @@ module Fluent
         #@@lastEmittedCpuHealthState = ''
         @@previousMemoryRssHealthDetails = {"State": "", "Time": "", "Percentage": ""}
         @@previousPreviousMemoryRssHealthDetails = {"State": "", "Time": "", "Percentage": ""}
+        @@clusterName = KubernetesApiClient.getClusterName
+        @@clusterId = KubernetesApiClient.getClusterId
+        @@clusterRegion = KubernetesApiClient.getClusterRegion
         #@@currentMemoryRssHealthState = ''
 
 		def initialize
@@ -47,11 +50,14 @@ module Fluent
 
         def filter(tag, time, record)
             healthRecord = {}
-            hostName = (OMS::Common.get_hostname)
-            currentTime = Time.now
-            batchTime = currentTime.utc.iso8601
+            #hostName = (OMS::Common.get_hostname)
+            #currentTime = Time.now
+            #batchTime = currentTime.utc.iso8601
             #healthRecord['CollectionTime'] = batchTime #This is the time that is mapped to become TimeGenerated
-            healthRecord['Computer'] = hostName
+            healthRecord['ClusterName'] = @@clusterName
+            healthRecord['ClusterId'] = @@clusterId
+            healthRecord['ClusterRegion'] = @@clusterRegion
+            healthRecord['Computer'] = record['data']['baseData']['series'][0]['dimValues'][0]
             metricTime = record['time']
             metricName = record['data']['baseData']['metric']
             metricValue = record['data']['baseData']['series'][0]['min']
@@ -73,8 +79,8 @@ module Fluent
                     healthRecord['NodeCpuUtilizationPercentage'] = metricValue
                     #healthRecord['TimeStateDetected'] = @@previousPreviousCpuHealthDetails['Time']
                     healthRecord['CollectionTime'] = @@previousPreviousCpuHealthDetails['Time']
-                    healthRecord['PrevNodeCpuUtilizationPercentage'] = { "Percent": @@previousCpuHealthDetails["Percentage"], "TimeStamp": @@previousCpuHealthDetails["Time"]}
-                    healthRecord['PrevPrevNodeCpuUtilizationPercentage'] = { "Percent": @@previousPreviousCpuHealthDetails["Percentage"], "TimeStamp": @@previousPreviousCpuHealthDetails["Time"]}
+                    healthRecord['PrevNodeCpuUtilizationDetails'] = { "Percent": @@previousCpuHealthDetails["Percentage"], "TimeStamp": @@previousCpuHealthDetails["Time"]}
+                    healthRecord['PrevPrevNodeCpuUtilizationDetails'] = { "Percent": @@previousPreviousCpuHealthDetails["Percentage"], "TimeStamp": @@previousPreviousCpuHealthDetails["Time"]}
                     updateHealthState = true
                 end
                 @@previousPreviousCpuHealthDetails['State'] = @@previousCpuHealthDetails['State']
@@ -89,6 +95,8 @@ module Fluent
                     healthRecord['NodeMemoryRssHealthState'] = healthState
                     healthRecord['NodeMemoryRssPercentage'] = metricValue
                     healthRecord['CollectionTime'] = @@previousMemoryRssHealthDetails['Time']
+                    healthRecord['PrevNodeMemoryRssDetails'] = { "Percent": @@previousMemoryRssHealthDetails["Percentage"], "TimeStamp": @@previousMemoryRssHealthDetails["Time"]}
+                    healthRecord['PrevPrevNodeMemoryRssDetails'] = { "Percent": @@previousPreviousMemoryRssHealthDetails["Percentage"], "TimeStamp": @@previousPreviousMemoryRssHealthDetails["Time"]}
                     #healthRecord['TimeStateDetected'] = @@previousMemoryRssHealthDetails['Time']
                     updateHealthState = true
                 end
