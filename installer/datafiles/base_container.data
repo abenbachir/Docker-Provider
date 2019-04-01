@@ -15,133 +15,133 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
-/opt/microsoft/docker-cimprov/lib/libcontainer.so;			intermediate/${{BUILD_CONFIGURATION}}/libcontainer.so;	755; root; root
+/opt/microsoft/docker-cimprov/lib/libcontainer.so;			intermediate/${{BUILD_CONFIGURATION}}/libcontainer.so;	755; omsagent; omsagent
 
-/etc/opt/microsoft/docker-cimprov/conf/installinfo.txt;			installer/conf/installinfo.txt;						644; root; root; conffile
+/etc/opt/microsoft/docker-cimprov/conf/installinfo.txt;			installer/conf/installinfo.txt;						644; omsagent; omsagent; conffile
 
-/etc/opt/omi/conf/omiregister/root-cimv2/container.reg;			installer/conf/omi/container.reg;					755; root; root
+/etc/opt/omi/conf/omiregister/root-cimv2/container.reg;			installer/conf/omi/container.reg;					755; omsagent; omsagent
 
-/opt/microsoft/omsagent/plugin/filter_docker_log.rb;			source/code/plugin/filter_docker_log.rb;			644; root; root
-/opt/microsoft/omsagent/plugin/filter_container.rb;			    source/code/plugin/filter_container.rb;				644; root; root
+/opt/microsoft/omsagent/plugin/filter_docker_log.rb;			source/code/plugin/filter_docker_log.rb;			644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/filter_container.rb;			    source/code/plugin/filter_container.rb;				644; omsagent; omsagent
 
 /opt/microsoft/omsagent/plugin/in_kube_podinventory.rb;			source/code/plugin/in_kube_podinventory.rb;			644; omsagent; omsagent
-/opt/microsoft/omsagent/plugin/in_kube_events.rb;			    source/code/plugin/in_kube_events.rb;				644; root; root
-/opt/microsoft/omsagent/plugin/in_kube_logs.rb;                 source/code/plugin/in_kube_logs.rb;                 644; root; root
-/opt/microsoft/omsagent/plugin/KubernetesApiClient.rb;			source/code/plugin/KubernetesApiClient.rb;			644; root; root
+/opt/microsoft/omsagent/plugin/in_kube_events.rb;			    source/code/plugin/in_kube_events.rb;				644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/in_kube_logs.rb;                 source/code/plugin/in_kube_logs.rb;                 644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/KubernetesApiClient.rb;			source/code/plugin/KubernetesApiClient.rb;			644; omsagent; omsagent
 
-/etc/opt/microsoft/docker-cimprov/container.conf;			    installer/conf/container.conf;                      644; root; root
+/etc/opt/microsoft/docker-cimprov/container.conf;			    installer/conf/container.conf;                      644; omsagent; omsagent
 
-/opt/microsoft/omsagent/plugin/CAdvisorMetricsAPIClient.rb;     source/code/plugin/CAdvisorMetricsAPIClient.rb;     644; root; root
-/opt/microsoft/omsagent/plugin/in_kube_perf.rb;			        source/code/plugin/in_kube_perf.rb;			    	644; root; root
-/opt/microsoft/omsagent/plugin/in_cadvisor_perf.rb;			        source/code/plugin/in_cadvisor_perf.rb;			    	644; root; root
-/opt/microsoft/omsagent/plugin/in_kube_services.rb;			        source/code/plugin/in_kube_services.rb;			    	644; root; root
-/opt/microsoft/omsagent/plugin/in_kube_nodes.rb;			        source/code/plugin/in_kube_nodes.rb;			    	644; root; root
-/opt/microsoft/omsagent/plugin/filter_inventory2mdm.rb;			     source/code/plugin/filter_inventory2mdm.rb;			    	644; root; root
-/opt/microsoft/omsagent/plugin/CustomMetricsUtils.rb;			     source/code/plugin/CustomMetricsUtils.rb;			    	644; root; root
+/opt/microsoft/omsagent/plugin/CAdvisorMetricsAPIClient.rb;     source/code/plugin/CAdvisorMetricsAPIClient.rb;     644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/in_kube_perf.rb;			        source/code/plugin/in_kube_perf.rb;			    	644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/in_cadvisor_perf.rb;			        source/code/plugin/in_cadvisor_perf.rb;			    	644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/in_kube_services.rb;			        source/code/plugin/in_kube_services.rb;			    	644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/in_kube_nodes.rb;			        source/code/plugin/in_kube_nodes.rb;			    	644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/filter_inventory2mdm.rb;			     source/code/plugin/filter_inventory2mdm.rb;			    	644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/CustomMetricsUtils.rb;			     source/code/plugin/CustomMetricsUtils.rb;			    	644; omsagent; omsagent
 
 
-/opt/microsoft/omsagent/plugin/ApplicationInsightsUtility.rb;									source/code/plugin/ApplicationInsightsUtility.rb;	644; root; root
-/opt/microsoft/omsagent/plugin/ContainerInventoryState.rb;										source/code/plugin/ContainerInventoryState.rb;		644; root; root
-/opt/microsoft/omsagent/plugin/DockerApiClient.rb;												source/code/plugin/DockerApiClient.rb;				644; root; root
-/opt/microsoft/omsagent/plugin/DockerApiRestHelper.rb;											source/code/plugin/DockerApiRestHelper.rb;			644; root; root
-/opt/microsoft/omsagent/plugin/in_containerinventory.rb;										source/code/plugin/in_containerinventory.rb;		644; root; root
+/opt/microsoft/omsagent/plugin/ApplicationInsightsUtility.rb;									source/code/plugin/ApplicationInsightsUtility.rb;	644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/ContainerInventoryState.rb;										source/code/plugin/ContainerInventoryState.rb;		644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/DockerApiClient.rb;												source/code/plugin/DockerApiClient.rb;				644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/DockerApiRestHelper.rb;											source/code/plugin/DockerApiRestHelper.rb;			644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/in_containerinventory.rb;										source/code/plugin/in_containerinventory.rb;		644; omsagent; omsagent
 
-/opt/microsoft/omsagent/plugin/out_mdm.rb;                                                  source/code/plugin/out_mdm.rb; 644; root; root
-/opt/microsoft/omsagent/plugin/filter_cadvisor2mdm.rb;                                      source/code/plugin/filter_cadvisor2mdm.rb; 644; root; root
+/opt/microsoft/omsagent/plugin/out_mdm.rb;                                                  source/code/plugin/out_mdm.rb; 644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/filter_cadvisor2mdm.rb;                                      source/code/plugin/filter_cadvisor2mdm.rb; 644; omsagent; omsagent
 
-/opt/microsoft/omsagent/plugin/lib/application_insights/version.rb;								source/code/plugin/lib/application_insights/version.rb; 644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/rack/track_request.rb;					source/code/plugin/lib/application_insights/rack/track_request.rb;      644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/unhandled_exception.rb;					source/code/plugin/lib/application_insights/unhandled_exception.rb;     644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/telemetry_client.rb;					source/code/plugin/lib/application_insights/telemetry_client.rb;        644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/queue_base.rb;					source/code/plugin/lib/application_insights/channel/queue_base.rb;      644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/asynchronous_queue.rb;			source/code/plugin/lib/application_insights/channel/asynchronous_queue.rb;      644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/synchronous_sender.rb;			source/code/plugin/lib/application_insights/channel/synchronous_sender.rb;      644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/data_point_type.rb;   source/code/plugin/lib/application_insights/channel/contracts/data_point_type.rb;       644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/data_point.rb;        source/code/plugin/lib/application_insights/channel/contracts/data_point.rb;    644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/stack_frame.rb;       source/code/plugin/lib/application_insights/channel/contracts/stack_frame.rb;   644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/request_data.rb;      source/code/plugin/lib/application_insights/channel/contracts/request_data.rb;  644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/session.rb;			source/code/plugin/lib/application_insights/channel/contracts/session.rb;       644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/page_view_data.rb;    source/code/plugin/lib/application_insights/channel/contracts/page_view_data.rb;        644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/remote_dependency_data.rb;    source/code/plugin/lib/application_insights/channel/contracts/remote_dependency_data.rb;        644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/exception_data.rb;    source/code/plugin/lib/application_insights/channel/contracts/exception_data.rb;        644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/location.rb;			source/code/plugin/lib/application_insights/channel/contracts/location.rb;      644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/operation.rb;			source/code/plugin/lib/application_insights/channel/contracts/operation.rb;     644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/data.rb;				source/code/plugin/lib/application_insights/channel/contracts/data.rb;  644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/event_data.rb;        source/code/plugin/lib/application_insights/channel/contracts/event_data.rb;    644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/metric_data.rb;       source/code/plugin/lib/application_insights/channel/contracts/metric_data.rb;   644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/device.rb;			 source/code/plugin/lib/application_insights/channel/contracts/device.rb;        644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/message_data.rb;      source/code/plugin/lib/application_insights/channel/contracts/message_data.rb;  644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/dependency_source_type.rb;    source/code/plugin/lib/application_insights/channel/contracts/dependency_source_type.rb;        644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/user.rb;				source/code/plugin/lib/application_insights/channel/contracts/user.rb;  644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/severity_level.rb;    source/code/plugin/lib/application_insights/channel/contracts/severity_level.rb;        644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/application.rb;       source/code/plugin/lib/application_insights/channel/contracts/application.rb;   644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/dependency_kind.rb;   source/code/plugin/lib/application_insights/channel/contracts/dependency_kind.rb;       644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/cloud.rb;				source/code/plugin/lib/application_insights/channel/contracts/cloud.rb; 644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/envelope.rb;			source/code/plugin/lib/application_insights/channel/contracts/envelope.rb;      644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/json_serializable.rb; source/code/plugin/lib/application_insights/channel/contracts/json_serializable.rb;     644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/domain.rb;			source/code/plugin/lib/application_insights/channel/contracts/domain.rb;        644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/base.rb;				source/code/plugin/lib/application_insights/channel/contracts/base.rb;  644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/reopenings.rb;        source/code/plugin/lib/application_insights/channel/contracts/reopenings.rb;    644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/page_view_perf_data.rb;       source/code/plugin/lib/application_insights/channel/contracts/page_view_perf_data.rb;   644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/internal.rb;			source/code/plugin/lib/application_insights/channel/contracts/internal.rb;      644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/availability_data.rb; source/code/plugin/lib/application_insights/channel/contracts/availability_data.rb;     644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/exception_details.rb; source/code/plugin/lib/application_insights/channel/contracts/exception_details.rb;     644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/synchronous_queue.rb;			source/code/plugin/lib/application_insights/channel/synchronous_queue.rb;       644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/sender_base.rb;					source/code/plugin/lib/application_insights/channel/sender_base.rb;     644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/telemetry_context.rb;			source/code/plugin/lib/application_insights/channel/telemetry_context.rb;       644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/asynchronous_sender.rb;			source/code/plugin/lib/application_insights/channel/asynchronous_sender.rb;     644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/telemetry_channel.rb;			source/code/plugin/lib/application_insights/channel/telemetry_channel.rb;       644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/event.rb;						source/code/plugin/lib/application_insights/channel/event.rb;   644; root; root
-/opt/microsoft/omsagent/plugin/lib/application_insights.rb;     source/code/plugin/lib/application_insights.rb; 644; root; root
+/opt/microsoft/omsagent/plugin/lib/application_insights/version.rb;								source/code/plugin/lib/application_insights/version.rb; 644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/rack/track_request.rb;					source/code/plugin/lib/application_insights/rack/track_request.rb;      644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/unhandled_exception.rb;					source/code/plugin/lib/application_insights/unhandled_exception.rb;     644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/telemetry_client.rb;					source/code/plugin/lib/application_insights/telemetry_client.rb;        644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/queue_base.rb;					source/code/plugin/lib/application_insights/channel/queue_base.rb;      644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/asynchronous_queue.rb;			source/code/plugin/lib/application_insights/channel/asynchronous_queue.rb;      644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/synchronous_sender.rb;			source/code/plugin/lib/application_insights/channel/synchronous_sender.rb;      644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/data_point_type.rb;   source/code/plugin/lib/application_insights/channel/contracts/data_point_type.rb;       644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/data_point.rb;        source/code/plugin/lib/application_insights/channel/contracts/data_point.rb;    644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/stack_frame.rb;       source/code/plugin/lib/application_insights/channel/contracts/stack_frame.rb;   644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/request_data.rb;      source/code/plugin/lib/application_insights/channel/contracts/request_data.rb;  644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/session.rb;			source/code/plugin/lib/application_insights/channel/contracts/session.rb;       644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/page_view_data.rb;    source/code/plugin/lib/application_insights/channel/contracts/page_view_data.rb;        644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/remote_dependency_data.rb;    source/code/plugin/lib/application_insights/channel/contracts/remote_dependency_data.rb;        644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/exception_data.rb;    source/code/plugin/lib/application_insights/channel/contracts/exception_data.rb;        644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/location.rb;			source/code/plugin/lib/application_insights/channel/contracts/location.rb;      644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/operation.rb;			source/code/plugin/lib/application_insights/channel/contracts/operation.rb;     644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/data.rb;				source/code/plugin/lib/application_insights/channel/contracts/data.rb;  644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/event_data.rb;        source/code/plugin/lib/application_insights/channel/contracts/event_data.rb;    644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/metric_data.rb;       source/code/plugin/lib/application_insights/channel/contracts/metric_data.rb;   644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/device.rb;			 source/code/plugin/lib/application_insights/channel/contracts/device.rb;        644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/message_data.rb;      source/code/plugin/lib/application_insights/channel/contracts/message_data.rb;  644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/dependency_source_type.rb;    source/code/plugin/lib/application_insights/channel/contracts/dependency_source_type.rb;        644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/user.rb;				source/code/plugin/lib/application_insights/channel/contracts/user.rb;  644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/severity_level.rb;    source/code/plugin/lib/application_insights/channel/contracts/severity_level.rb;        644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/application.rb;       source/code/plugin/lib/application_insights/channel/contracts/application.rb;   644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/dependency_kind.rb;   source/code/plugin/lib/application_insights/channel/contracts/dependency_kind.rb;       644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/cloud.rb;				source/code/plugin/lib/application_insights/channel/contracts/cloud.rb; 644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/envelope.rb;			source/code/plugin/lib/application_insights/channel/contracts/envelope.rb;      644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/json_serializable.rb; source/code/plugin/lib/application_insights/channel/contracts/json_serializable.rb;     644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/domain.rb;			source/code/plugin/lib/application_insights/channel/contracts/domain.rb;        644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/base.rb;				source/code/plugin/lib/application_insights/channel/contracts/base.rb;  644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/reopenings.rb;        source/code/plugin/lib/application_insights/channel/contracts/reopenings.rb;    644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/page_view_perf_data.rb;       source/code/plugin/lib/application_insights/channel/contracts/page_view_perf_data.rb;   644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/internal.rb;			source/code/plugin/lib/application_insights/channel/contracts/internal.rb;      644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/availability_data.rb; source/code/plugin/lib/application_insights/channel/contracts/availability_data.rb;     644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts/exception_details.rb; source/code/plugin/lib/application_insights/channel/contracts/exception_details.rb;     644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/synchronous_queue.rb;			source/code/plugin/lib/application_insights/channel/synchronous_queue.rb;       644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/sender_base.rb;					source/code/plugin/lib/application_insights/channel/sender_base.rb;     644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/telemetry_context.rb;			source/code/plugin/lib/application_insights/channel/telemetry_context.rb;       644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/asynchronous_sender.rb;			source/code/plugin/lib/application_insights/channel/asynchronous_sender.rb;     644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/telemetry_channel.rb;			source/code/plugin/lib/application_insights/channel/telemetry_channel.rb;       644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/event.rb;						source/code/plugin/lib/application_insights/channel/event.rb;   644; omsagent; omsagent
+/opt/microsoft/omsagent/plugin/lib/application_insights.rb;     source/code/plugin/lib/application_insights.rb; 644; omsagent; omsagent
 
-/opt/td-agent-bit/bin/out_oms.so;                                intermediate/${{BUILD_CONFIGURATION}}/out_oms.so;  	755; root; root
-/etc/opt/microsoft/docker-cimprov/td-agent-bit.conf;			    installer/conf/td-agent-bit.conf;                    644; root; root
-/etc/opt/microsoft/docker-cimprov/out_oms.conf;			            installer/conf/out_oms.conf;                    644; root; root
+/opt/td-agent-bit/bin/out_oms.so;                                intermediate/${{BUILD_CONFIGURATION}}/out_oms.so;  	755; omsagent; omsagent
+/etc/opt/microsoft/docker-cimprov/td-agent-bit.conf;			    installer/conf/td-agent-bit.conf;                    644; omsagent; omsagent
+/etc/opt/microsoft/docker-cimprov/out_oms.conf;			            installer/conf/out_oms.conf;                    644; omsagent; omsagent
 
 %Links
-/opt/omi/lib/libcontainer.${{SHLIB_EXT}}; /opt/microsoft/docker-cimprov/lib/libcontainer.${{SHLIB_EXT}}; 644; root; root
+/opt/omi/lib/libcontainer.${{SHLIB_EXT}}; /opt/microsoft/docker-cimprov/lib/libcontainer.${{SHLIB_EXT}}; 644; omsagent; omsagent
 
 %Directories
-/etc;                                                   755; root; root; sysdir
-/etc/opt;                                               755; root; root; sysdir
-/opt;                                                   755; root; root; sysdir
-/var;                                                   755; root; root; sysdir
-/var/opt;                                               755; root; root; sysdir
+/etc;                                                   755; omsagent; omsagent; sysdir
+/etc/opt;                                               755; omsagent; omsagent; sysdir
+/opt;                                                   755; omsagent; omsagent; sysdir
+/var;                                                   755; omsagent; omsagent; sysdir
+/var/opt;                                               755; omsagent; omsagent; sysdir
 
-/etc/opt/microsoft;                                     755; root; root; sysdir
-/etc/opt/microsoft/docker-cimprov;                      755; root; root
-/etc/opt/microsoft/docker-cimprov/conf;                 755; root; root
+/etc/opt/microsoft;                                     755; omsagent; omsagent; sysdir
+/etc/opt/microsoft/docker-cimprov;                      755; omsagent; omsagent
+/etc/opt/microsoft/docker-cimprov/conf;                 755; omsagent; omsagent
 
 /etc/opt/omi;                                           755; root; root; sysdir
 /etc/opt/omi/conf;                                      755; root; root; sysdir
 /etc/opt/omi/conf/omiregister;                          755; root; root; sysdir
 /etc/opt/omi/conf/omiregister/root-cimv2;               755; root; root
 
-/opt/microsoft;                                         755; root; root; sysdir
-/opt/microsoft/docker-cimprov;                          755; root; root
-/opt/microsoft/docker-cimprov/bin;                      755; root; root
-/opt/microsoft/docker-cimprov/lib;                      755; root; root
+/opt/microsoft;                                         755; omsagent; omsagent; sysdir
+/opt/microsoft/docker-cimprov;                          755; omsagent; omsagent
+/opt/microsoft/docker-cimprov/bin;                      755; omsagent; omsagent
+/opt/microsoft/docker-cimprov/lib;                      755; omsagent; omsagent
 
-/opt/microsoft/omsagent;                                755; root; root; sysdir
-/opt/microsoft/omsagent/plugin;                         755; root; root; sysdir
+/opt/microsoft/omsagent;                                755; omsagent; omsagent; sysdir
+/opt/microsoft/omsagent/plugin;                         755; omsagent; omsagent; sysdir
 
 /opt/omi;                                               755; root; root; sysdir
 /opt/omi/lib;                                           755; root; root; sysdir
 
-/var/opt/microsoft;                                     755; root; root; sysdir
-/var/opt/microsoft/docker-cimprov;                      755; root; root
-/var/opt/microsoft/docker-cimprov/state;                755; root; root
-/var/opt/microsoft/docker-cimprov/state/ContainerInventory; 755; root; root
-/var/opt/microsoft/docker-cimprov/log;                  755; root; root
+/var/opt/microsoft;                                     755; omsagent; omsagent; sysdir
+/var/opt/microsoft/docker-cimprov;                      755; omsagent; omsagent
+/var/opt/microsoft/docker-cimprov/state;                755; omsagent; omsagent
+/var/opt/microsoft/docker-cimprov/state/ContainerInventory; 755; omsagent; omsagent
+/var/opt/microsoft/docker-cimprov/log;                  755; omsagent; omsagent
 
-/opt/td-agent-bit;                          755; root; root;sysdir
-/opt/td-agent-bit/bin;                      755; root; root;sysdir
+/opt/td-agent-bit;                          755; omsagent; omsagent;sysdir
+/opt/td-agent-bit/bin;                      755; omsagent; omsagent;sysdir
 
-/opt/microsoft/omsagent/plugin/lib;												755; root; root; sysdir
-/opt/microsoft/omsagent/plugin/lib/application_insights;                        755; root; root; sysdir
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel;                755; root; root; sysdir
-/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts;      755; root; root; sysdir
-/opt/microsoft/omsagent/plugin/lib/application_insights/rack;                   755; root; root; sysdir
+/opt/microsoft/omsagent/plugin/lib;												755; omsagent; omsagent; sysdir
+/opt/microsoft/omsagent/plugin/lib/application_insights;                        755; omsagent; omsagent; sysdir
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel;                755; omsagent; omsagent; sysdir
+/opt/microsoft/omsagent/plugin/lib/application_insights/channel/contracts;      755; omsagent; omsagent; sysdir
+/opt/microsoft/omsagent/plugin/lib/application_insights/rack;                   755; omsagent; omsagent; sysdir
 
 %Dependencies
 
