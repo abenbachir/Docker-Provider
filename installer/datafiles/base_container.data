@@ -15,7 +15,7 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
-/opt/microsoft/docker-cimprov/lib/libcontainer.so;			intermediate/${{BUILD_CONFIGURATION}}/libcontainer.so;	755; omsagent; omsagent
+/opt/microsoft/docker-cimprov/lib/libcontainer.so;			intermediate/${{BUILD_CONFIGURATION}}/libcontainer.so;	755; root; root
 
 /etc/opt/microsoft/docker-cimprov/conf/installinfo.txt;			installer/conf/installinfo.txt;						644; omsagent; omsagent; conffile
 
